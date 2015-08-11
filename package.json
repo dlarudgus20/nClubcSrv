@@ -1,0 +1,19 @@
+{
+  "name": "nclubcsrv",
+  "version": "3.0.0",
+  "description": "new Clubc Server with nodejs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dlarudgus20/nClubcSrv.git"
+  },
+  "author": "ikh",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/dlarudgus20/nClubcSrv/issues"
+  },
+  "homepage": "https://github.com/dlarudgus20/nClubcSrv#readme"
+}
