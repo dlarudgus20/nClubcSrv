@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/dlarudgus20/nClubcSrv/issues"
   },
-  "homepage": "https://github.com/dlarudgus20/nClubcSrv#readme"
+  "homepage": "https://github.com/dlarudgus20/nClubcSrv#readme",
+  "dependencies": {
+    "binary": "^0.3.0",
+    "buffers": "^0.1.1"
+  }
 }

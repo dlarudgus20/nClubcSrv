@@ -1,14 +1,16 @@
 var net = require('net');
 var assert = require('assert');
+var binary = require('binary');
 
 var CCC2Protocol = {
-	VERSION_STR: new Buffer([ 0xa2, 0xa0, 0xa0, 0xb4, 0 ]),
-	CMD_CNT_SUCCEED: new Buffer([ 0x7f, 0x0a, 0x2f, 0x55, 0xda, 0x72, 0 ]),
-	CMD_MY_NICKNAME: new Buffer([ 0xf2, 0x3b, 0x7f, 0xee, 0xc9, 0x76 ]),
-	CMD_CNTLIST_BEGIN: new Buffer([ 0xe9, 0x3f, 0x77, 0x79, 0x1d, 0x36, 0x9a, 0x83, 0 ]),
-	CMD_CNTLIST_END: new Buffer([ 0x93, 0x11, 0xf8, 0x8e, 0x0a, 0xf0, 0x5a, 0x82, 0 ]),
-	CMD_CNTLIST_ADD: new Buffer([ 0x98, 0x1f, 0x9c, 0x3a, 0x9f, 0xef, 0xf9, 0xfa, 0x7b ]),
-	CMD_CNTLIST_REMOVE: new Buffer([ 0xa1, 0xfa, 0x93, 0x91, 0x82, 0x90, 0x46, 0x72, 0x13 ])
+	PORT: 35729,
+	VERSION_STR: [ 0xa2, 0xa0, 0xa0, 0xb4, 0 ],
+	CMD_CNT_SUCCEED: [ 0x7f, 0x0a, 0x2f, 0x55, 0xda, 0x72, 0 ],
+	CMD_MY_NICKNAME: [ 0xf2, 0x3b, 0x7f, 0xee, 0xc9, 0x76 ],
+	CMD_CNTLIST_BEGIN: [ 0xe9, 0x3f, 0x77, 0x79, 0x1d, 0x36, 0x9a, 0x83, 0 ],
+	CMD_CNTLIST_END: [ 0x93, 0x11, 0xf8, 0x8e, 0x0a, 0xf0, 0x5a, 0x82, 0 ],
+	CMD_CNTLIST_ADD: [ 0x98, 0x1f, 0x9c, 0x3a, 0x9f, 0xef, 0xf9, 0xfa, 0x7b ],
+	CMD_CNTLIST_REMOVE: [ 0xa1, 0xfa, 0x93, 0x91, 0x82, 0x90, 0x46, 0x72, 0x13 ]
 };
 
 var logger = new Logger();
@@ -30,21 +32,35 @@ function Server()
 			this.clients.push(client);
 			client.onConnect();
 		});
-		tcpsrv.listen(12345, function() {
+		tcpsrv.listen(CCC2Protocol.PORT, function() {
 			logger.log('server bound');
 		});
+	}
+	this.removeClient = function(client) {
+		delete this.clients[client];
 	}
 }
 
 function Client(socket)
 {
 	this.socket = socket;
+	this.dataBufs = binary();
+	this.toString = function() {
+		return 'Client';
+	}
 	this.onConnect = function() {
-		console.log('connected');
+		var thiz = this;
+
+		logger.log(this, 'connected');
 		this.socket.setEncoding('binary');
 	
 		this.socket.on('end', function() {
-			console.log('disconnected');
+			server.removeClient(thiz);
+			logger.log(thiz, 'disconnected');
+		});
+		this.socket.on('data', function(data) {
+			thiz.dataBufs.push(data);
+			thiz.dataBufs.indexOf()
 		});
 	}
 }
