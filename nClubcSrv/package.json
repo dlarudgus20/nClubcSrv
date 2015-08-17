@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/dlarudgus20/nClubcSrv#readme",
   "dependencies": {
-    "binary": "^0.3.0",
-    "buffers": "^0.1.1"
+    "sqlite3": "^3.0.10"
   }
 }
