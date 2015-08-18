@@ -3,7 +3,7 @@ var Client_2 = require('./Client_2.js');
 
 var verSize = 5;
 var versions = [
-	{ ver: [ 0xa2, 0xa0, 0xa0, 0xb4, 0 ], con:Client_2 }
+	{ ver: [ 0xa2, 0xa0, 0xa0, 0xb4, 0 ], Con:Client_2 }
 ];
 
 function Connection(server, socket)
@@ -33,14 +33,14 @@ Connection.prototype.onConnect = function() {
 	this.socket.on('end', function() {
 		if (that.client != null)
 		{
-			that.client.onEnd();
+			that.client.onEnd(); // TODO: change into event
 		}
 		that.server.removeClient(that);
 		Logger.log(that, 'disconnected');
 	});
 	this.socket.on('data', function(data) {
 		if (that.client != null)
-			that.client.onData(data);
+			that.client.onData(data); // TODO: change into event
 
 		var idx;
 		for (idx = that.recvVer.length; idx < Math.min(data.length, 5); idx++)
@@ -58,7 +58,7 @@ Connection.prototype.onConnect = function() {
 				
 				if (found)
 				{
-					that.client = new versions[i].con(that, data.slice(idx));
+					that.client = new versions[i].Con(that, data.slice(idx));
 					return;
 				}
 			}

@@ -1,21 +1,51 @@
 var sqlite3 = require('sqlite3');
 
-exports.init = function() {
+var User = require('./User.js');
 
+/****************
+ * RawUserDb    *
+ ****************/
+function RawUserDb()
+{
+	this.handleCounter = 0;
+	this.users = [];
 }
 
-exports.getUserList = function() {
+RawUserDb.prototype.init = function() {
 	
 }
 
-exports.getUser = function(handle) {
-	
+RawUserDb.prototype.getUser = function(handle) {
+	return this.users.find(function(usr) {
+		return usr.getHandle() == handle;
+	});
 }
 
-exports.getUserFromNick = function(nick) {
-	
+RawUserDb.prototype.getUserFromNick = function(nick) {
+	return this.users.find(function(usr) {
+		return usr.getNick() == nick;
+	});
 }
 
-exports.login = function(id, pw) {
+RawUserDb.prototype.login = function(id, pw) {
+	var usr = this.users.find(function(usr) {
+		return usr.getId() == id;
+	});
 	
+	if (usr !== undefined)
+	{
+		return usr;
+	}
+	else
+	{
+		var handle = this.handleCounter++;
+		return new User(this, handle, id, id);
+	}
+}
+
+/****************
+ * construct    *
+ ****************/
+exports.construct = function() {
+	return new RawUserDb();
 }
