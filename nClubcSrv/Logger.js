@@ -1,3 +1,10 @@
+var events = require('events');
+
+var emitter = new events.EventEmitter();
+emitter.on('log', function(str) {
+	console.log(str);
+});
+
 exports.log = function(obj, topic, detail) {
 	var str = '<' + obj.toString() + '> ' + topic;
 	if (typeof detail !== 'undefined')
@@ -5,7 +12,7 @@ exports.log = function(obj, topic, detail) {
 		str += ' : ' + detail;
 	}
 	str += ' [' + getNowDateStr() + ']';
-	console.log(str);
+	emitter.emit('log', str);
 }
 
 function getNowDateStr()

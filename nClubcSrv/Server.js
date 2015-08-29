@@ -29,7 +29,11 @@ Server.prototype.start = function() {
 }
 
 Server.prototype.removeConnection = function(conn) {
-	delete this.connections[conn];
+	this.connections.splice(
+		this.connections.findIndex(function(c) {
+			return c == conn;
+		}),
+		1);
 }
 
 module.exports = Server;

@@ -11,35 +11,35 @@ function RawUserDb()
 	this.users = [];
 }
 
-RawUserDb.prototype.init = function() {
-	
+RawUserDb.prototype.init = function(callback, thisObj) {
+	callback.call(thisObj);
 }
 
-RawUserDb.prototype.getUser = function(handle) {
-	return this.users.find(function(usr) {
+RawUserDb.prototype.getUser = function(handle, callback, thisObj) {
+	callback.call(thisObj, this.users.find(function(usr) {
 		return usr.getHandle() == handle;
-	});
+	}));
 }
 
-RawUserDb.prototype.getUserFromNick = function(nick) {
-	return this.users.find(function(usr) {
+RawUserDb.prototype.getUserFromNick = function(nick, callback, thisObj) {
+	callback.call(thisObj, this.users.find(function(usr) {
 		return usr.getNick() == nick;
-	});
+	}));
 }
 
-RawUserDb.prototype.login = function(id, pw) {
+RawUserDb.prototype.login = function(id, pw, callback, thisObj) {
 	var usr = this.users.find(function(usr) {
 		return usr.getId() == id;
 	});
 	
 	if (usr !== undefined)
 	{
-		return usr;
+		callback.call(thisObj, usr);
 	}
 	else
 	{
 		var handle = this.handleCounter++;
-		return new User(this, handle, id, id);
+		callback.call(thisObj, new User(this, handle, id, id));
 	}
 }
 

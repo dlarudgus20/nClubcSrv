@@ -1,3 +1,5 @@
+var Logger = require('./Logger.js');
+
 var CCC2Protocol = {
 	CMD_CNT_SUCCEED: [ 0x7f, 0x0a, 0x2f, 0x55, 0xda, 0x72, 0 ],
 	CMD_MY_NICKNAME: [ 0xf2, 0x3b, 0x7f, 0xee, 0xc9, 0x76 ],
@@ -10,7 +12,12 @@ var CCC2Protocol = {
 function Client_2(conn, buf)
 {
 	this.connection = conn;
-	this.recvBuf = buf;
+	this.recvBuf = new Buffer(0);
+	conn.on('data', this.onData.bind(this));
+	conn.on('end', this.onEnd.bind(this));
+
+	// to process initial buf
+	this.onData(buf);
 }
 
 Client_2.prototype.toString = function() {
@@ -18,7 +25,7 @@ Client_2.prototype.toString = function() {
 }
 
 Client_2.prototype.onData = function(data) {
-	
+
 }
 
 Client_2.prototype.onEnd = function() {
