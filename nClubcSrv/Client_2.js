@@ -1,3 +1,5 @@
+var MemoryStream = require('memorystream');
+
 var Logger = require('./Logger.js');
 
 var CCC2Protocol = {
@@ -12,9 +14,10 @@ var CCC2Protocol = {
 function Client_2(conn, buf)
 {
 	this.connection = conn;
-	this.recvBuf = new Buffer(0);
-	conn.on('data', this.onData.bind(this));
-	conn.on('end', this.onEnd.bind(this));
+	this.recvBufs = [];
+
+	this.id = null;
+	this.pw = null;
 
 	// to process initial buf
 	this.onData(buf);
@@ -25,11 +28,46 @@ Client_2.prototype.toString = function() {
 }
 
 Client_2.prototype.onData = function(data) {
+	var i, j = 0;
+	for (i = 0; i < data.length; i++)
+	{
+		if (data[i] == '\0')
+		{
+			var thestr = data.slice(j, i - j + 1);
+			if (j == 0)
+			{
+				this.recvBufs.push(thestr);
+				thestr = Buffer.concat(this.recvBufs);
+				this.recvBufs = [];
+			}
+			j = i + 1;
 
+			this.processString(thestr);
+		}
+	}
+	if (i != j)
+	{
+		this.recvBufs.push(data.slice(j, i - j + 1));
+	}
+}
+
+Client_2.prototype.processString = function(data) {
+	if (this.id == null)
+	{
+		data.setEncoding('utf8');
+		this.id = data.toString();
+	}
+	else if (this.pw == null)
+	{
+		data.setEncoding('utf8');
+		this.pw = data.toString();
+
+		this.socket.pause();
+	}
 }
 
 Client_2.prototype.onEnd = function() {
-	
+
 }
 
 module.exports = Client_2;

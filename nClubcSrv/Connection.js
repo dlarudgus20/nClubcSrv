@@ -1,5 +1,3 @@
-var events = require('events');
-
 var Logger = require('./Logger.js');
 var Client_2 = require('./Client_2.js');
 
@@ -10,13 +8,11 @@ var versions = [
 
 function Connection(server, socket)
 {
-	events.EventEmitter.call(this);
 	this.server = server;
 	this.socket = socket;
 	this.recvVer = [];
 	this.client = null;
 };
-Connection.prototype.__proto__ = events.EventEmitter.prototype;
 
 Connection.prototype.toString = function() {
 	var str;
@@ -40,15 +36,14 @@ Connection.prototype.onConnect = function() {
 
 	this.socket.on('end', function() {
 		if (that.client != null)
-		{
-			that.emit('end');
-		}
+			that.client.onEnd();
+
 		that.server.removeClient(that);
 		Logger.log(that, 'disconnected');
 	});
 	this.socket.on('data', function(data) {
 		if (that.client != null)
-			that.emit('data', data);
+			that.client.onData(data);
 
 		var idx;
 		for (idx = that.recvVer.length; idx < Math.min(data.length, 5); idx++)
