@@ -64,6 +64,3 @@ function filterInt(value)
 		return Number(value);
 	return NaN;
 }
-
-// https://nodejs.org/api/buffer.html
-// http://substack.net/binary_stream_parsing_in_node

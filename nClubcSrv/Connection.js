@@ -29,6 +29,10 @@ Connection.prototype.getSocket = function() {
 	return this.socket;
 }
 
+Connection.prototype.destroy = function() {
+	this.socket.destroy();
+}
+
 Connection.prototype.onConnect = function() {
 	var that = this;
 
