@@ -2,6 +2,7 @@ var Logger = require('./Logger.js');
 
 var roomList = [];
 var defaultRoom = null;
+var handleCounter = 0;
 
 exports.getDefaultRoom = function() {
 	if (defaultRoom == null)
@@ -22,10 +23,10 @@ exports.createRoom = function(name, owner) {
 	var room = roomList.find(function(r) { return r.name == name; });
 	if (room === undefined)
 	{
-		if (name != '')
-			Logger.log('RoomList', 'Create Room', 'Name(' + name + ')');
-		else
-			Logger.log('RoomList', 'Create Default Room');
+		Logger.log((owner != null) ? owner : '(none)',
+			'Create Room', 'Name(' + name + ')');
+
+		room = new Room(name);
 
 		if (owner != null)
 		{
@@ -52,6 +53,7 @@ function Room(name)
 	this.notice = '';
 	this.owner = null;
 	this.users = [];
+	this.handle = handleCounter;
 }
 
 Room.prototype.toString = function() {
@@ -74,18 +76,59 @@ Room.prototype.getOwner = function() {
 	return this.owner;
 }
 
-Room.prototype.addUser = function() {
-	
+Room.prototype.addUser = function(usr) {
+	for (var other in this.users)
+	{
+		other.onAddedRoomUser(this, usr);
+	}
+
+	this.users.push(usr);
+
+	if (this.owner == null)
+		this.owner = usr;
 }
 
-Room.prototype.removeUser = function() {
+Room.prototype.removeUser = function(usr) {
+	if (this.owner == usr)
+	{
+		if (this.users.length > 1)
+		{
+			this.changeOwner(
+				this.users.find(function(u) { return u != usr; })
+				);
+		}
+		else
+		{
+			this.owner = null;
+		}
+	}
 
+	this.users.splice(this.users.indexOf(usr), 1);
+
+	for (var other in this.users)
+	{
+		other.onRemovedRoomUser(this, usr);
+	}
 }
 
-Room.prototype.changeNotice = function() {
-	
+Room.prototype.changeNotice = function(requester, notice) {
+	this.notice = notice;
+
+	for (var other in this.users)
+	{
+		other.onChangedRoomNotice(this, requester);
+	}
 }
 
-Room.prototype.sayToRoom = function() {
-	
+Room.prototype.changeOwner = function(usr) {
+	// TODO: notify owner changed
+	this.owner = usr;
+}
+
+Room.prototype.sayToRoom = function(requester, saying) {
+	for (var other in this.users)
+	{
+		if (other != requester)
+			other.onRecvFromSayToRoom(this, requester, saying);
+	}
 }

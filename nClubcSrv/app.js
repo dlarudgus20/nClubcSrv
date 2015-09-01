@@ -6,7 +6,7 @@ var options = {
 };
 var argf = {
 	help: function(par) {
-		console.log('nClubcSrv 3.0');
+		console.log('nClubcSrv 2.5');
 		console.log();
 		console.log('Usage: nodejs app.js (--port [port:int])');
 		return true;

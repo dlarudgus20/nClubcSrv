@@ -15,14 +15,20 @@ function Connection(server, socket)
 };
 
 Connection.prototype.toString = function() {
-	var str;
-
+	var str = 'Client (' + this.socket.remoteAddress + ':' + this.socket.remotePort + ')';
 	if (this.client != null)
-		str = this.client.toString();
-	else
-		str = 'Connection';
+	{
+		str += ' ' + this.client.getClientKind();
+		if (this.client.isLogined())
+		{
+			str += ' (' + this.client.getUser().getNick() + ')';
+		}
+	}
+	return str;
+}
 
-	return str + ' (' + this.socket.remoteAddress + ':' + this.socket.remotePort + ')';
+Connection.prototype.getServer = function() {
+	return this.server;
 }
 
 Connection.prototype.getSocket = function() {
@@ -77,5 +83,7 @@ Connection.prototype.onConnect = function() {
 		}
 	});
 }
+
+// TODO: timer check
 
 module.exports = Connection;
