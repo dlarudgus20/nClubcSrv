@@ -1,5 +1,3 @@
-var MemoryStream = require('memorystream');
-
 var Logger = require('./Logger.js');
 var Room = require('./Room.js');
 
@@ -55,7 +53,7 @@ Client_2.prototype.sendCheckPacket = function() {
 	{
 		var sock = this.connection.getSocket();
 		var that = this;
-		sock.write('\0', 'utf8', function() {
+		sock.write(new Buffer([ 0 ]), function() {
 			that.bChecking = false;
 		});
 		return true;
@@ -71,7 +69,7 @@ Client_2.prototype.onData = function(data) {
 	var i, j = 0;
 	for (i = 0; i < data.length; i++)
 	{
-		if (data[i] == '\0')
+		if (data[i] == 0)
 		{
 			var thestr = data.slice(j, i - j + 1);
 			if (j == 0)
@@ -96,13 +94,11 @@ Client_2.prototype.processString = function(data) {
 
 	if (this.id == null)
 	{
-		data.setEncoding('utf8');
-		this.id = data.toString();
+		this.id = data.toString('utf8');
 	}
 	else if (this.user == null)
 	{
-		data.setEncoding('utf8');
-		var pw = data.toString();
+		var pw = data.toString('utf8');
 
 		this.socket.pause();
 		var usrdb = this.connection.getServer().getUserDB();
@@ -117,8 +113,7 @@ Client_2.prototype.processString = function(data) {
 	}
 	else
 	{
-		data.setEncoding('utf8');
-		var chat = data.toString();
+		var chat = data.toString('utf8');
 
 		var idx = chat.indexOf(':');
 		if (idx != -1 && idx + 2 < chat.size())
