@@ -165,21 +165,21 @@ Client_2.prototype.processString = function(data) {
 		usrdb.login(this.id, pw, function(usr) {
 			if (usr != null)
 			{
-				Logger.log(this, 'Login',
-					'id(' + this.id + ') pw(' + pw + ') nick(' + usr.getNick() + ') handle(' + usr.getId() + ')');
+				Logger.log(that, 'Login',
+					'id(' + that.id + ') pw(' + pw + ') nick(' + usr.getNick() + ') handle(' + usr.getId() + ')');
 
 				that.id = '';
 				that.user = usr;
 	
-				usr.addClient(this);
-				usr.joinRoom(this, this.room);
+				usr.addClient(that);
+				usr.joinRoom(that, Room.getDefaultRoom());
 	
 				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_MY_NICKNAME));
 				conn.getSocket().write(usr.getNick() + '\0');
 				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNT_SUCCEED));
 
 				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_BEGIN));
-				for (var other in this.room.getUsers())
+				for (var other in that.room.getUsers())
 				{
 					conn.getSocket().write(other.getNick() + '\0');
 				}
@@ -187,17 +187,17 @@ Client_2.prototype.processString = function(data) {
 
 				conn.getSocket().write(usr.getNick() + message.EnterNotify + '\0');
 
-				if (this.room.getNotice() != '')
+				if (that.room.getNotice() != '')
 				{
-					conn.getSocket().write(message.PrefixNotice + this.room.getNotice() + '\0');
+					conn.getSocket().write(message.PrefixNotice + that.room.getNotice() + '\0');
 				}
 
 				conn.getSocket().resume();
 			}
 			else
 			{
-				Logger.log(this, 'Login Failed',
-					"id(" + this.id + ")pw(" + pw + ")");
+				Logger.log(that, 'Login Failed',
+					"id(" + that.id + ")pw(" + pw + ")");
 				conn.destroy();
 			}
 		});
