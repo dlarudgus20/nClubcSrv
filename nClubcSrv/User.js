@@ -11,6 +11,13 @@ function User(usrdb, handle, id, nick)
 	this.clients = [];
 	this.joinedRooms = [];
 }
+module.exports = User;
+
+User.prototype.ExitRoomReason = {
+	Normal: 0,
+	Forced: 1,
+	RoomClosed: 2
+};
 
 User.prototype.toString = function() {
 	return '(User) ' + this.nick;
@@ -26,6 +33,10 @@ User.prototype.getNick = function() {
 
 User.prototype.getHandle = function() {
 	return this.handle;
+}
+
+User.prototype.getClients = function() {
+	return this.clients;
 }
 
 User.prototype.addClient = function(client) {
@@ -116,5 +127,3 @@ User.prototype.onRecvFromSayToRoom = function(room, requester, saying) {
 		c.onRecvFromSayToRoom(room, requester, saying);
 	}
 }
-
-module.exports = User;

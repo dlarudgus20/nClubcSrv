@@ -1,3 +1,5 @@
+require('array.prototype.find');
+
 var Logger = require('./Logger.js');
 
 var roomList = [];

@@ -12,10 +12,12 @@ function Connection(server, socket)
 	this.socket = socket;
 	this.recvVer = [];
 	this.client = null;
-};
+	this.logstr = 'Client (' + this.socket.remoteAddress + ':' + this.socket.remotePort + ')';
+}
+module.exports = Connection;
 
 Connection.prototype.toString = function() {
-	var str = 'Client (' + this.socket.remoteAddress + ':' + this.socket.remotePort + ')';
+	var str = this.logstr;
 	if (this.client != null)
 	{
 		str += ' ' + this.client.getClientKind();
@@ -48,7 +50,6 @@ Connection.prototype.onConnect = function() {
 		if (that.client != null)
 			that.client.onEnd();
 
-		that.server.removeClient(that);
 		Logger.log(that, 'disconnected');
 	});
 	this.socket.on('data', function(data) {
@@ -72,6 +73,7 @@ Connection.prototype.onConnect = function() {
 				if (found)
 				{
 					that.client = new versions[i].Con(that, data.slice(idx));
+					Logger.log(that, 'version checked');
 					return;
 				}
 			}
@@ -85,5 +87,3 @@ Connection.prototype.onConnect = function() {
 }
 
 // TODO: timer check
-
-module.exports = Connection;

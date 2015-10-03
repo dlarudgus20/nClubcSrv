@@ -1,4 +1,5 @@
 var Logger = require('./Logger.js');
+var User = require('./User.js');
 var Room = require('./Room.js');
 
 var CCC2Protocol = {
@@ -28,9 +29,12 @@ function Client_2(conn, buf)
 	this.bChecking = false;
 	this.room = Room.getDefaultRoom();
 
+	this.bOnceJoined = false;
+
 	// to process initial buf
 	this.onData(buf);
 }
+module.exports = Client_2;
 
 Client_2.prototype.toString = function() {
 	return this.connection.toString();
@@ -64,6 +68,61 @@ Client_2.prototype.sendCheckPacket = function() {
 		return false;
 	}
 }
+Client_2.prototype.onJoinedRoom = function(room, isExternal) {
+	if (room == this.room)
+	{
+		if (this.bOnceJoined)
+		{
+			this.connection.getSocket().write(this.user.getNick() + message.EnterNotify);
+		}
+		else
+		{
+			this.bOnceJoined = true;
+		}
+	}
+}
+
+Client_2.prototype.onExitedRoom = function(room, reason, isExternal) {
+	if (room == this.room)
+	{
+		this.room = null;
+		this.connection.getSocket().write(message.ExitedRoom);
+	}
+}
+
+Client_2.prototype.onAddedRoomUser = function(room, user) {
+	if (room == this.room)
+	{
+		this.connection.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_ADD));
+		this.connection.getSocket().write(user.getNick());
+
+		this.connection.getSocket().write(user.getNick() + message.EnterNotify);
+	}
+}
+
+Client_2.prototype.onRemovedRoomUser = function(room, user) {
+	if (room == this.room)
+	{
+		this.connection.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_REMOVE));
+		this.connection.getSocket().write(user.getNick());
+		
+		this.connection.getSocket().write(user.getNick() + message.LeaveNotify);
+	}
+}
+
+Client_2.prototype.onChangedRoomNotice = function(room, requester) {
+	if (room == this.room)
+	{
+		this.connection.getSocket().write(message.PrefixNotice + room.getNotice());
+	}
+}
+
+Client_2.prototype.onRecvFromSayToRoom = function(room, requester, saying) {
+	if (room == this.room)
+	{
+		this.connection.getSocket().write(requester.getNick() + " : " + saying);
+	}
+}
 
 Client_2.prototype.onData = function(data) {
 	var i, j = 0;
@@ -91,6 +150,7 @@ Client_2.prototype.onData = function(data) {
 
 Client_2.prototype.processString = function(data) {
 	var that = this;
+	var conn = this.connection;
 
 	if (this.id == null)
 	{
@@ -100,15 +160,46 @@ Client_2.prototype.processString = function(data) {
 	{
 		var pw = data.toString('utf8');
 
-		this.socket.pause();
+		conn.getSocket().pause();
 		var usrdb = this.connection.getServer().getUserDB();
 		usrdb.login(this.id, pw, function(usr) {
-			that.id = '';
-			that.user = usr;
+			if (usr != null)
+			{
+				Logger.log(this, 'Login',
+					'id(' + this.id + ') pw(' + pw + ') nick(' + usr.getNick() + ') handle(' + usr.getId() + ')');
 
-			;
+				that.id = '';
+				that.user = usr;
+	
+				usr.addClient(this);
+				usr.joinRoom(this, this.room);
+	
+				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_MY_NICKNAME));
+				conn.getSocket().write(usr.getNick() + '\0');
+				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNT_SUCCEED));
 
-			that.socket.resume();
+				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_BEGIN));
+				for (var other in this.room.getUsers())
+				{
+					conn.getSocket().write(other.getNick() + '\0');
+				}
+				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_END));
+
+				conn.getSocket().write(usr.getNick() + message.EnterNotify + '\0');
+
+				if (this.room.getNotice() != '')
+				{
+					conn.getSocket().write(message.PrefixNotice + this.room.getNotice() + '\0');
+				}
+
+				conn.getSocket().resume();
+			}
+			else
+			{
+				Logger.log(this, 'Login Failed',
+					"id(" + this.id + ")pw(" + pw + ")");
+				conn.destroy();
+			}
 		});
 	}
 	else
@@ -139,7 +230,12 @@ Client_2.prototype.processString = function(data) {
 }
 
 Client_2.prototype.onEnd = function() {
-
+	if (this.user != null)
+	{
+		if (this.user.getClients().length == 1)
+		{
+			this.user.exitRoom(this, this.room, User.ExitRoomReason.Normal);
+			this.user.removeClient(this);
+		}
+	}
 }
-
-module.exports = Client_2;

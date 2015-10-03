@@ -11,6 +11,7 @@ function Server(port)
 	this.tcpsrv = null;
 	this.usrdb = null;
 }
+module.exports = Server;
 
 Server.prototype.toString = function() {
 	return 'Server';
@@ -41,5 +42,3 @@ Server.prototype.start = function() {
 		});
 	});
 }
-
-module.exports = Server;
