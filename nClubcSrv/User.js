@@ -58,10 +58,9 @@ User.prototype.joinRoom = function(client, room) {
 	this.joinedRooms.push(room);
 	room.addUser(this);
 
-	for (var c in this.clients)
-	{
+	this.clients.forEach(function(c) {
 		c.onJoinedRoom(room, (c != client));
-	}
+	});
 	
 	Logger.log(this, 'Join Room', room.name);
 	return ServerErrorCode.Succeeded;
@@ -74,10 +73,9 @@ User.prototype.createRoom = function(client, name) {
 
 	this.joinedRooms.push(room);
 
-	for (var c in this.clients)
-	{
+	this.clients.forEach(function(c) {
 		c.onJoinedRoom(room, (c != client));
-	}
+	});
 
 	Logger.log(this, 'Create Room', room.name);
 	return ServerErrorCode.Succeeded;
@@ -91,39 +89,34 @@ User.prototype.exitRoom = function(client, room, reason) {
 	room.removeUser(this);
 	this.joinedRooms.splice(i, 1);
 
-	for (var c in this.clients)
-	{
+	this.clients.forEach(function(c) {
 		c.onExitedRoom(room, reason, (c != client));
-	}
+	});
 
 	Logger.log(this, 'Exit Room', room.name);
 	return ServerErrorCode.Succeeded;
 }
 
 User.prototype.onAddedRoomUser = function(room, user) {
-	for (var c in this.clients)
-	{
+	this.clients.forEach(function(c) {
 		c.onAddedRoomUser(room, user);
-	}
+	});
 }
 
 User.prototype.onRemovedRoomUser = function(room, user) {
-	for (var c in this.clients)
-	{
+	this.clients.forEach(function(c) {
 		c.onRemovedRoomUser(room, user);
-	}
+	});
 }
 
 User.prototype.onChangedRoomNotice = function(room, requester) {
-	for (var c in this.clients)
-	{
+	this.clients.forEach(function(c) {
 		c.onChangedRoomNotice(room, requester);
-	}
+	});
 }
 
 User.prototype.onRecvFromSayToRoom = function(room, requester, saying) {
-	for (var c in this.clients)
-	{
+	this.clients.forEach(function(c) {
 		c.onRecvFromSayToRoom(room, requester, saying);
-	}
+	});
 }

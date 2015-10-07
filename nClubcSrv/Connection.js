@@ -46,12 +46,6 @@ Connection.prototype.onConnect = function() {
 
 	Logger.log(this, 'connected');
 
-	this.socket.on('end', function() {
-		if (that.client != null)
-			that.client.onEnd();
-
-		Logger.log(that, 'disconnected');
-	});
 	this.socket.on('data', function(data) {
 		if (that.client != null)
 			that.client.onData(data);
@@ -83,6 +77,15 @@ Connection.prototype.onConnect = function() {
 			that.server.removeConnection(that);
 			that.socket.destroy();
 		}
+	});
+	this.socket.on('error', function(err) {
+		Logger.log(that, 'disconnected by error' + err.message);
+	})
+	this.socket.on('end', function() {
+		if (that.client != null)
+			that.client.onEnd();
+
+		Logger.log(that, 'disconnected');
 	});
 }
 

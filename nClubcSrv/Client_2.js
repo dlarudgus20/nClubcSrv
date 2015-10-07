@@ -133,9 +133,12 @@ Client_2.prototype.onData = function(data) {
 			var thestr = data.slice(j, i - j + 1);
 			if (j == 0)
 			{
-				this.recvBufs.push(thestr);
-				thestr = Buffer.concat(this.recvBufs);
-				this.recvBufs = [];
+				if (this.reccvBufs.length != 0)
+				{
+					this.recvBufs.push(thestr);
+					thestr = Buffer.concat(this.recvBufs);
+					this.recvBufs = [];
+				}
 			}
 			j = i + 1;
 
@@ -173,16 +176,15 @@ Client_2.prototype.processString = function(data) {
 	
 				usr.addClient(that);
 				usr.joinRoom(that, Room.getDefaultRoom());
-	
+
 				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_MY_NICKNAME));
 				conn.getSocket().write(usr.getNick() + '\0');
 				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNT_SUCCEED));
 
 				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_BEGIN));
-				for (var other in that.room.getUsers())
-				{
+				that.room.getUsers().forEach(function(other) {
 					conn.getSocket().write(other.getNick() + '\0');
-				}
+				});
 				conn.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_END));
 
 				conn.getSocket().write(usr.getNick() + message.EnterNotify + '\0');

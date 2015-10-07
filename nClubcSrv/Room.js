@@ -77,10 +77,11 @@ Room.prototype.getOwner = function() {
 }
 
 Room.prototype.addUser = function(usr) {
-	for (var other in this.users)
-	{
-		other.onAddedRoomUser(this, usr);
-	}
+	var that = this;
+
+	this.users.forEach(function(other) {
+		other.onAddedRoomUser(that, usr);
+	});
 
 	this.users.push(usr);
 
@@ -89,6 +90,8 @@ Room.prototype.addUser = function(usr) {
 }
 
 Room.prototype.removeUser = function(usr) {
+	var that = this;
+
 	if (this.owner == usr)
 	{
 		if (this.users.length > 1)
@@ -105,19 +108,19 @@ Room.prototype.removeUser = function(usr) {
 
 	this.users.splice(this.users.indexOf(usr), 1);
 
-	for (var other in this.users)
-	{
-		other.onRemovedRoomUser(this, usr);
-	}
+	this.users.forEach(function(other) {
+		other.onRemovedRoomUser(that, usr);
+	});
 }
 
 Room.prototype.changeNotice = function(requester, notice) {
+	var that = this;
+
 	this.notice = notice;
 
-	for (var other in this.users)
-	{
-		other.onChangedRoomNotice(this, requester);
-	}
+	this.users.forEach(function(other) {
+		other.onChangedRoomNotice(that, requester);
+	});
 }
 
 Room.prototype.changeOwner = function(usr) {
@@ -126,9 +129,9 @@ Room.prototype.changeOwner = function(usr) {
 }
 
 Room.prototype.sayToRoom = function(requester, saying) {
-	for (var other in this.users)
-	{
+	var that = this;
+	this.users.forEach(function(other) {
 		if (other != requester)
-			other.onRecvFromSayToRoom(this, requester, saying);
-	}
+			other.onRecvFromSayToRoom(that, requester, saying);
+	});
 }
