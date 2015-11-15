@@ -11,8 +11,8 @@ var CCC2Protocol = {
 	CMD_CNTLIST_REMOVE: [ 0xa1, 0xfa, 0x93, 0x91, 0x82, 0x90, 0x46, 0x72, 0x13 ]
 };
 var message = {
-	EnterNotify: '님께서 들어오셨습니다. [CCC2 호환 레이어]',
-	LeaveNotify: '님께서 나가셨습니다. [CCC2 호환 레이어]',
+	EnterNotify: ' 님께서 들어오셨습니다. [CCC2 호환 레이어]',
+	LeaveNotify: ' 님께서 나가셨습니다. [CCC2 호환 레이어]',
 	PrefixNotice: '<공지> ',
 	PrefixWhisper: '<귓속말> ',
 	ExitedRoom: '<CCC2 호환 레이어> 방에서 나가졌습니다. 재입장을 시도하려면 "<<join>>"이라고 입력하십시오.',
@@ -57,7 +57,7 @@ Client_2.prototype.sendCheckPacket = function() {
 	{
 		var sock = this.connection.getSocket();
 		var that = this;
-		sock.write(new Buffer([ 0 ]), function() {
+		sock.write('\0', function() {
 			that.bChecking = false;
 		});
 		return true;
@@ -73,7 +73,7 @@ Client_2.prototype.onJoinedRoom = function(room, isExternal) {
 	{
 		if (this.bOnceJoined)
 		{
-			this.connection.getSocket().write(this.user.getNick() + message.EnterNotify);
+			this.connection.getSocket().write(this.user.getNick() + message.EnterNotify + '\0');
 		}
 		else
 		{
@@ -86,7 +86,7 @@ Client_2.prototype.onExitedRoom = function(room, reason, isExternal) {
 	if (room == this.room)
 	{
 		this.room = null;
-		this.connection.getSocket().write(message.ExitedRoom);
+		this.connection.getSocket().write(message.ExitedRoom + '\0');
 	}
 }
 
@@ -94,9 +94,9 @@ Client_2.prototype.onAddedRoomUser = function(room, user) {
 	if (room == this.room)
 	{
 		this.connection.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_ADD));
-		this.connection.getSocket().write(user.getNick());
+		this.connection.getSocket().write(user.getNick() + '\0');
 
-		this.connection.getSocket().write(user.getNick() + message.EnterNotify);
+		this.connection.getSocket().write(user.getNick() + message.EnterNotify + '\0');
 	}
 }
 
@@ -104,23 +104,23 @@ Client_2.prototype.onRemovedRoomUser = function(room, user) {
 	if (room == this.room)
 	{
 		this.connection.getSocket().write(new Buffer(CCC2Protocol.CMD_CNTLIST_REMOVE));
-		this.connection.getSocket().write(user.getNick());
+		this.connection.getSocket().write(user.getNick() + '\0');
 		
-		this.connection.getSocket().write(user.getNick() + message.LeaveNotify);
+		this.connection.getSocket().write(user.getNick() + message.LeaveNotify + '\0');
 	}
 }
 
 Client_2.prototype.onChangedRoomNotice = function(room, requester) {
 	if (room == this.room)
 	{
-		this.connection.getSocket().write(message.PrefixNotice + room.getNotice());
+		this.connection.getSocket().write(message.PrefixNotice + room.getNotice() + '\0');
 	}
 }
 
 Client_2.prototype.onRecvFromSayToRoom = function(room, requester, saying) {
 	if (room == this.room)
 	{
-		this.connection.getSocket().write(requester.getNick() + " : " + saying);
+		this.connection.getSocket().write(requester.getNick() + " : " + saying + '\0');
 	}
 }
 
@@ -130,10 +130,10 @@ Client_2.prototype.onData = function(data) {
 	{
 		if (data[i] == 0)
 		{
-			var thestr = data.slice(j, i - j + 1);
+			var thestr = data.slice(j, i - j);
 			if (j == 0)
 			{
-				if (this.reccvBufs.length != 0)
+				if (this.recvBufs.length != 0)
 				{
 					this.recvBufs.push(thestr);
 					thestr = Buffer.concat(this.recvBufs);
@@ -209,22 +209,23 @@ Client_2.prototype.processString = function(data) {
 		var chat = data.toString('utf8');
 
 		var idx = chat.indexOf(':');
-		if (idx != -1 && idx + 2 < chat.size())
+		if (idx != -1 && idx + 2 < chat.length)
 		{
 			var msg = chat.slice(idx + 2);
 			if (this.room != null)
 			{
-				this.room.SayToRoom(this.user, msg);
+				this.room.sayToRoom(this.user, msg);
+				conn.getSocket().write(this.user.getNick() + ' : ' + msg + '\0');
 			}
 			else
 			{
 				if (msg == message.RejoinRoom)
 				{
-					this.user.JoinRoom(this, Room.getDefaultRoom());
+					this.user.joinRoom(this, Room.getDefaultRoom());
 				}
 				else
 				{
-					this.socket.write(message.ExitedRoom);
+					this.socket.write(message.ExitedRoom + '\0');
 				}
 			}
 		}

@@ -48,34 +48,38 @@ Connection.prototype.onConnect = function() {
 
 	this.socket.on('data', function(data) {
 		if (that.client != null)
+		{
 			that.client.onData(data);
-
-		var idx;
-		for (idx = that.recvVer.length; idx < Math.min(data.length, 5); idx++)
-		{
-			that.recvVer[idx] = data[idx];
 		}
-
-		if (idx >= verSize)
+		else
 		{
-			for (var i = 0; i < versions.length; i++)
+			var idx;
+			for (idx = that.recvVer.length; idx < Math.min(data.length, 5); idx++)
 			{
-				var found = that.recvVer.every(function(n, j) {
-					return versions[i].ver[j] == n;
-				});
-				
-				if (found)
-				{
-					that.client = new versions[i].Con(that, data.slice(idx));
-					Logger.log(that, 'version checked');
-					return;
-				}
+				that.recvVer[idx] = data[idx];
 			}
-
-			// invalid client
-			Logger.log(that, 'invalid client');
-			that.server.removeConnection(that);
-			that.socket.destroy();
+	
+			if (idx >= verSize)
+			{
+				for (var i = 0; i < versions.length; i++)
+				{
+					var found = that.recvVer.every(function(n, j) {
+						return versions[i].ver[j] == n;
+					});
+					
+					if (found)
+					{
+						that.client = new versions[i].Con(that, data.slice(idx));
+						Logger.log(that, 'version checked');
+						return;
+					}
+				}
+	
+				// invalid client
+				Logger.log(that, 'invalid client');
+				that.server.removeConnection(that);
+				that.socket.destroy();
+			}
 		}
 	});
 	this.socket.on('error', function(err) {

@@ -13,7 +13,7 @@ function User(usrdb, handle, id, nick)
 }
 module.exports = User;
 
-User.prototype.ExitRoomReason = {
+User.ExitRoomReason = {
 	Normal: 0,
 	Forced: 1,
 	RoomClosed: 2
