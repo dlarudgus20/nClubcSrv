@@ -1,14 +1,28 @@
+var fs = require('fs');
+
 var Logger = require('./Logger.js');
 
 var roomList = [];
 var defaultRoom = null;
 var handleCounter = 0;
 
-exports.getDefaultRoom = function() {
+exports.createDefaultRoom = function() {
 	if (defaultRoom == null)
 	{
+		var notice = '';
+		try
+		{
+			notice = fs.readFile('notice.txt', 'utf8');
+		}
+		catch (error) { /* ignore */ }
+
 		defaultRoom = exports.createRoom('광장');
+		defaultRoom.changeNotice(null, notice);
 	}
+	return defaultRoom;
+}
+
+exports.getDefaultRoom = function() {
 	return defaultRoom;
 }
 
